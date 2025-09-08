@@ -4,6 +4,12 @@ use petgraph::{EdgeType, Graph, graph::NodeIndex};
 use std::collections::HashMap;
 use uuid::Uuid;
 
+// -----------RUNTIME-REF---------------------------------
+#[derive(Debug)]
+pub struct RuntimeRef {
+    pub edges: Vec<Ref<EdgeIndex>>,
+    pub nodes: Vec<Ref<NodeIndex>>,
+}
 // -----------RUNTIME---------------------------------
 #[derive(Debug)]
 pub struct Runtime<T, Ty: EdgeType> {
@@ -11,6 +17,7 @@ pub struct Runtime<T, Ty: EdgeType> {
     pub core: Graph<Node<T>, u32, Ty>,
     pub nodes: Vec<Node<T>>,
     pub edges: Vec<Edge>,
+    pub runtime_ref: RuntimeRef,
     pub node_indices: HashMap<Uuid, NodeIndex>,
     pub metadata: Metadata,
 }
@@ -24,6 +31,10 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
             core,
             nodes: vec![],
             edges: vec![],
+            runtime_ref: RuntimeRef {
+                edges: vec![],
+                nodes: vec![],
+            },
             node_indices: HashMap::new(),
             metadata: Metadata::new(description.to_string()),
         }
@@ -39,19 +50,51 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
     where
         T: Clone,
     {
-        self.nodes.push(from.clone());
-        self.nodes.push(to.clone());
+        let mut from_clone = from.clone();
+        let mut to_clone = to.clone();
         let from_idx = self.core.add_node(from);
         let to_idx = self.core.add_node(to);
+        from_clone.node_index = Some(from_idx);
+        to_clone.node_index = Some(to_idx);
+        from_clone.connections.push(Ref {
+            uuid: from_clone.metadata.id,
+            index: from_idx,
+        });
+        to_clone.connections.push(Ref {
+            uuid: to_clone.metadata.id,
+            index: to_idx,
+        });
+        self.runtime_ref.nodes.push(Ref {
+            uuid: from_clone.metadata.id,
+            index: from_idx,
+        });
+
+        self.runtime_ref.nodes.push(Ref {
+            uuid: to_clone.metadata.id,
+            index: to_idx,
+        });
 
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
         let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
+        self.runtime_ref.edges.push(Ref {
+            uuid: edge.metadata.id,
+            index: edge_index,
+        });
 
+        self.nodes.push(from_clone);
+        self.nodes.push(to_clone);
         self.edges.push(edge);
 
         Ok(())
     }
+}
+
+// -----------REFS---------------------------------
+#[derive(Debug, Clone, Copy)]
+pub struct Ref<I> {
+    pub uuid: Uuid,
+    pub index: I,
 }
 
 // -----------NODE---------------------------------
@@ -59,8 +102,8 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
 pub struct Node<T> {
     pub name: String,
     pub content: T,
-    pub connections: Vec<Edge>,
-    pub node_index: NodeIndex,
+    pub connections: Vec<Ref<NodeIndex>>,
+    pub node_index: Option<NodeIndex>,
     pub metadata: Metadata,
 }
 
@@ -68,19 +111,14 @@ impl<T> Node<T> {
     pub fn new(
         name: &str,
         content: T,
-        connections: Vec<Edge>,
-        node_index: Option<NodeIndex>,
+        connections: Vec<Ref<NodeIndex>>,
         description: &str,
     ) -> Self {
-        let node_index = match node_index {
-            Some(node_index) => node_index,
-            None => NodeIndex::new(0),
-        };
         Self {
             name: String::from(name),
             content,
             connections,
-            node_index,
+            node_index: None,
             metadata: Metadata::new(description.to_string()),
         }
     }
