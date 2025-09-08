@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use petgraph::prelude::EdgeIndex;
 use petgraph::{EdgeType, Graph, graph::NodeIndex};
-use std::collections::HashMap;
 use uuid::Uuid;
 
 // -----------RUNTIME-REF---------------------------------
@@ -18,7 +17,6 @@ pub struct Runtime<T, Ty: EdgeType> {
     pub nodes: Vec<Node<T>>,
     pub edges: Vec<Edge>,
     pub runtime_ref: RuntimeRef,
-    pub node_indices: HashMap<Uuid, NodeIndex>,
     pub metadata: Metadata,
 }
 
@@ -35,7 +33,6 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
                 edges: vec![],
                 nodes: vec![],
             },
-            node_indices: HashMap::new(),
             metadata: Metadata::new(description.to_string()),
         }
     }
