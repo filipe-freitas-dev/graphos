@@ -61,23 +61,47 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
             uuid: to_clone.metadata.id,
             index: to_idx,
         });
-        self.runtime_ref.nodes.push(Ref {
-            uuid: from_clone.metadata.id,
-            index: from_idx,
-        });
+        if !self
+            .runtime_ref
+            .nodes
+            .iter()
+            .any(|r| r.uuid == from_clone.metadata.id)
+        {
+            self.runtime_ref.nodes.push(Ref {
+                uuid: from_clone.metadata.id,
+                index: from_idx,
+            });
+        }
 
-        self.runtime_ref.nodes.push(Ref {
-            uuid: to_clone.metadata.id,
-            index: to_idx,
-        });
+        if !self
+            .runtime_ref
+            .nodes
+            .iter()
+            .any(|r| r.uuid == to_clone.metadata.id)
+        {
+            self.runtime_ref.nodes.push(Ref {
+                uuid: to_clone.metadata.id,
+                index: to_idx,
+            });
+        }
 
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
         let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
-        self.runtime_ref.edges.push(Ref {
-            uuid: edge.metadata.id,
-            index: edge_index,
-        });
+
+        if !self
+            .runtime_ref
+            .edges
+            .iter()
+            .any(|r| r.uuid == edge.metadata.id)
+        {
+            self.runtime_ref.edges.push(Ref {
+                uuid: edge.metadata.id,
+                index: edge_index,
+            });
+        }
+        from_clone.metadata.update();
+        to_clone.metadata.update();
 
         self.nodes.push(from_clone);
         self.nodes.push(to_clone);
@@ -88,7 +112,7 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
 }
 
 // -----------REFS---------------------------------
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ref<I> {
     pub uuid: Uuid,
     pub index: I,

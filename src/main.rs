@@ -1,5 +1,4 @@
 use petgraph::Undirected;
-use petgraph::graph::NodeIndex;
 
 use crate::models::graph_models::Node;
 use crate::models::graph_models::Runtime;
@@ -14,7 +13,7 @@ fn main() {
         "friendship",
         "description of friendship",
     );
-    println!("{:?}", runtime.edges);
-    println!("{:?}", runtime.nodes);
-    println!("{:?}", runtime.runtime_ref);
+    println!("{:#?}", runtime.edges);
+    println!("{:#?}", runtime.nodes);
+    println!("{:#?}", runtime.runtime_ref);
 }
