@@ -1,13 +1,12 @@
 use chrono::{DateTime, Utc};
 use petgraph::prelude::EdgeIndex;
-use petgraph::visit::EdgeRef;
-use petgraph::{EdgeType, Graph, adj::NodeIndex};
+use petgraph::{EdgeType, Graph, graph::NodeIndex};
 use std::collections::HashMap;
 use uuid::Uuid;
 
-// -----------GRAPHO---------------------------------
+// -----------RUNTIME---------------------------------
 #[derive(Debug)]
-pub struct Grapho<T, Ty: EdgeType> {
+pub struct Runtime<T, Ty: EdgeType> {
     pub name: String,
     pub core: Graph<Node<T>, u32, Ty>,
     pub nodes: Vec<Node<T>>,
@@ -16,7 +15,7 @@ pub struct Grapho<T, Ty: EdgeType> {
     pub metadata: Metadata,
 }
 
-impl<T, Ty: EdgeType> Grapho<T, Ty> {
+impl<T, Ty: EdgeType> Runtime<T, Ty> {
     pub fn new(name: &str) -> Self {
         let core = Graph::<Node<T>, u32, Ty>::default();
         let description = format!("{} graph.", name);
@@ -30,20 +29,26 @@ impl<T, Ty: EdgeType> Grapho<T, Ty> {
         }
     }
 
-    pub fn add_connection(&mut self, from: Node<T>, to: Node<T>, name: &str) -> Result<(), String> {
-        let edge_index = self.core.add_edge(
-            from.node_index.unwrap().into(),
-            to.node_index.unwrap().into(),
-            1,
-        );
+    pub fn add_connection(
+        &mut self,
+        from: Node<T>,
+        to: Node<T>,
+        name: &str,
+        description: &str,
+    ) -> Result<(), String>
+    where
+        T: Clone,
+    {
+        self.nodes.push(from.clone());
+        self.nodes.push(to.clone());
+        // Add the nodes to the graph; capture their actual indices assigned by petgraph
+        let from_idx = self.core.add_node(from);
+        let to_idx = self.core.add_node(to);
 
-        let edge = Edge::new(
-            name,
-            from.node_index.unwrap(),
-            to.node_index.unwrap(),
-            1,
-            edge_index,
-        );
+        // Now add the edge using the valid indices
+        let edge_index = self.core.add_edge(from_idx, to_idx, 1);
+
+        let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
 
         self.edges.push(edge);
 
@@ -52,12 +57,12 @@ impl<T, Ty: EdgeType> Grapho<T, Ty> {
 }
 
 // -----------NODE---------------------------------
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node<T> {
     pub name: String,
     pub content: T,
     pub connections: Vec<Edge>,
-    pub node_index: Option<NodeIndex>,
+    pub node_index: NodeIndex,
     pub metadata: Metadata,
 }
 
@@ -66,15 +71,19 @@ impl<T> Node<T> {
         name: &str,
         content: T,
         connections: Vec<Edge>,
-        description: &str,
         node_index: Option<NodeIndex>,
+        description: &str,
     ) -> Self {
+        let node_index = match node_index {
+            Some(node_index) => node_index,
+            None => NodeIndex::new(0),
+        };
         Self {
             name: String::from(name),
             content,
             connections,
             node_index,
-            metadata: Metadata::new(String::from(description)),
+            metadata: Metadata::new(description.to_string()),
         }
     }
 
@@ -84,7 +93,7 @@ impl<T> Node<T> {
 }
 
 // -----------EDGE---------------------------------
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Edge {
     pub name: String,
     pub from: NodeIndex,
@@ -101,9 +110,8 @@ impl Edge {
         to: NodeIndex,
         weight: u32,
         edge_index: EdgeIndex,
+        description: &str,
     ) -> Self {
-        let description = format!("{} --> {}", from, to);
-
         Self {
             name: name.to_string(),
             from,
@@ -129,7 +137,7 @@ impl Edge {
 }
 
 // -----------METADATA---------------------------------
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Metadata {
     pub created_at: DateTime<Utc>,
     pub description: String,
