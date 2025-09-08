@@ -41,11 +41,9 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
     {
         self.nodes.push(from.clone());
         self.nodes.push(to.clone());
-        // Add the nodes to the graph; capture their actual indices assigned by petgraph
         let from_idx = self.core.add_node(from);
         let to_idx = self.core.add_node(to);
 
-        // Now add the edge using the valid indices
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
         let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
@@ -86,10 +84,6 @@ impl<T> Node<T> {
             metadata: Metadata::new(description.to_string()),
         }
     }
-
-    pub fn connect(&mut self, vertice_id: Node<T>, name: &str) -> Result<(), String> {
-        Ok(())
-    }
 }
 
 // -----------EDGE---------------------------------
@@ -121,19 +115,6 @@ impl Edge {
             metadata: Metadata::new(description.to_string()),
         }
     }
-
-    // pub fn add_to_grapho<T, Ty: petgraph::EdgeType>(
-    //     &self,
-    //     grapho: &mut Grapho<T, Ty>,
-    // ) -> Result<(), String> {
-    //     grapho
-    //         .core
-    //         .add_edge(self.from.into(), self.to.into(), self.weight);
-
-    //     grapho.edges.push(self.metadata.id);
-
-    //     Ok(())
-    // }
 }
 
 // -----------METADATA---------------------------------
