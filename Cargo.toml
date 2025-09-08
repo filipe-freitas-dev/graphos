@@ -1,0 +1,10 @@
+[package]
+name = "graphos"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = { version = "0.4.42", features = ["serde"] }
+petgraph = "0.8.2"
+serde = "1.0.219"
+uuid = { version = "1.18.1", features = ["v4"] }
