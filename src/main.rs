@@ -1,12 +1,13 @@
 use petgraph::Undirected;
 
+use crate::models::graph_models::Grapho;
 use crate::models::graph_models::Node;
-use crate::models::graph_models::Runtime;
 
 mod models;
+const BASEPATH: &str = "./files";
 
 fn main() {
-    let mut runtime = Runtime::<String, Undirected>::new("test");
+    let mut runtime = Grapho::<String, Undirected>::new("test");
     let _ = runtime.add_connection(
         Node::new(
             "person1",
@@ -24,6 +25,8 @@ fn main() {
         "description of friendship",
     );
     println!("Graph edges: {:#?}", runtime.edges);
-    println!("Graph nodes: {:#?}", runtime.nodes);
     println!("Graph runtime references: {:#?}", runtime.runtime_ref);
+    runtime
+        .save_to_file(&format!("{}/{}.json", BASEPATH, runtime.name))
+        .unwrap()
 }

@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use petgraph::prelude::EdgeIndex;
 use petgraph::{EdgeType, Graph, graph::NodeIndex};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use uuid::Uuid;
 
 // -----------RUNTIME-REF---------------------------------
@@ -13,16 +12,15 @@ pub struct RuntimeRef {
 }
 // -----------RUNTIME---------------------------------
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Runtime<T, Ty: EdgeType> {
+pub struct Grapho<T, Ty: EdgeType> {
     pub name: String,
     pub core: Graph<Node<T>, u32, Ty>,
-    pub nodes: Vec<Node<T>>,
     pub edges: Vec<Edge>,
     pub runtime_ref: RuntimeRef,
     pub metadata: Metadata,
 }
 
-impl<T, Ty: EdgeType> Runtime<T, Ty>
+impl<T, Ty: EdgeType> Grapho<T, Ty>
 where
     T: Clone + Serialize + for<'de> Deserialize<'de>,
     Ty: EdgeType + Serialize + for<'de> Deserialize<'de>,
@@ -33,80 +31,32 @@ where
         Self {
             name: name.to_string(),
             core,
-            nodes: vec![],
             edges: vec![],
             runtime_ref: RuntimeRef {
                 edges: vec![],
                 nodes: vec![],
             },
-            metadata: Metadata::new(description.to_string()),
+            metadata: Metadata::new(description),
         }
     }
 
     pub fn add_connection(
         &mut self,
-        mut from: Node<T>,
-        mut to: Node<T>,
+        from: Node<T>,
+        to: Node<T>,
         name: &str,
         description: &str,
-    ) -> Result<(), String>
-    where
-        T: Clone,
-    {
-        // ---------- REUTILIZA OU ADICIONA NÓS ----------
-        // FROM
-        let from_idx = if let Some(existing_ref) = self
-            .runtime_ref
-            .nodes
-            .iter()
-            .find(|r| r.uuid == from.metadata.id)
-        {
-            existing_ref.index
-        } else {
-            let idx = self.core.add_node(from.clone());
-            from.node_index = Some(idx);
-            self.runtime_ref.nodes.push(Ref {
-                uuid: from.metadata.id,
-                index: idx,
-            });
-            self.nodes.push(from.clone());
-            idx
-        };
+    ) -> Result<(), String> {
+        let from_idx = self.get_or_add_node(from);
+        let to_idx = self.get_or_add_node(to);
 
-        // TO
-        let to_idx = if let Some(existing_ref) = self
-            .runtime_ref
-            .nodes
-            .iter()
-            .find(|r| r.uuid == to.metadata.id)
-        {
-            existing_ref.index
-        } else {
-            let idx = self.core.add_node(to.clone());
-            to.node_index = Some(idx);
-            self.runtime_ref.nodes.push(Ref {
-                uuid: to.metadata.id,
-                index: idx,
-            });
-            self.nodes.push(to.clone());
-            idx
-        };
-
-        // ---------- CRIA CONEXÃO ----------
-        from.connections.push(Ref {
-            uuid: from.metadata.id,
-            index: from_idx,
-        });
-        to.connections.push(Ref {
-            uuid: to.metadata.id,
-            index: to_idx,
-        });
-
+        // Cria relação no grafo e obtém índice da aresta
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
+        // Cria aresta rica
         let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
 
-        // Evita duplicação de referências de aresta
+        // Adiciona no vetor de arestas e nas referências
         if !self
             .runtime_ref
             .edges
@@ -119,36 +69,36 @@ where
             });
         }
 
-        // Atualiza metadados dos nós
-        if let Some(node) = self
-            .nodes
-            .iter_mut()
-            .find(|n| n.metadata.id == from.metadata.id)
-        {
-            node.metadata.update();
-        }
-        if let Some(node) = self
-            .nodes
-            .iter_mut()
-            .find(|n| n.metadata.id == to.metadata.id)
-        {
-            node.metadata.update();
-        }
-
         self.edges.push(edge);
-
         Ok(())
     }
 
-    pub fn save_to_file(&self, path: &str) -> Result<(), String> {
-        let json = serde_json::to_string_pretty(self)
-            .map_err(|e| format!("Erro ao serializar Runtime: {}", e))?;
-        fs::write(path, json).map_err(|e| format!("Erro ao escrever arquivo: {}", e))
+    fn get_or_add_node(&mut self, node: Node<T>) -> NodeIndex {
+        if let Some(existing_ref) = self
+            .runtime_ref
+            .nodes
+            .iter()
+            .find(|r| r.uuid == node.metadata.id)
+        {
+            existing_ref.index
+        } else {
+            let idx = self.core.add_node(node.clone());
+            self.runtime_ref.nodes.push(Ref {
+                uuid: node.metadata.id,
+                index: idx,
+            });
+            idx
+        }
     }
 
-    pub fn load_from_file(path: &str) -> Result<Self, String> {
-        let data = fs::read_to_string(path).map_err(|e| format!("Erro ao ler arquivo: {}", e))?;
-        serde_json::from_str(&data).map_err(|e| format!("Erro ao desserializar Runtime: {}", e))
+    pub fn save_to_file(&self, path: &str) -> Result<(), String> {
+        if let Some(parent) = std::path::Path::new(path).parent() {
+            std::fs::create_dir_all(parent)
+                .map_err(|e| format!("Error to create directories: {}", e))?;
+        }
+        let json = serde_json::to_string_pretty(self)
+            .map_err(|e| format!("Error to serialize Graph: {}", e))?;
+        std::fs::write(path, json).map_err(|e| format!("Error to write file: {}", e))
     }
 }
 
@@ -165,7 +115,7 @@ pub struct Node<T> {
     pub name: String,
     pub content: T,
     pub connections: Vec<Ref<NodeIndex>>,
-    pub node_index: Option<NodeIndex>,
+    pub node_index: NodeIndex,
     pub metadata: Metadata,
 }
 
@@ -180,7 +130,7 @@ impl<T> Node<T> {
             name: String::from(name),
             content,
             connections,
-            node_index: None,
+            node_index: NodeIndex::new(0),
             metadata: Metadata::new(description.to_string()),
         }
     }
@@ -238,12 +188,7 @@ impl Metadata {
         }
     }
 
-    pub fn update(&mut self) {
-        self.updated_at = Utc::now()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
+    // pub fn update(&mut self) {
+    //     self.updated_at = Utc::now()
+    // }
 }

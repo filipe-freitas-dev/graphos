@@ -1,0 +1,79 @@
+{
+  "name": "test",
+  "core": {
+    "nodes": [
+      {
+        "name": "person1",
+        "content": "filipe",
+        "connections": [],
+        "node_index": 0,
+        "metadata": {
+          "created_at": "2025-09-09T18:40:38.250498674Z",
+          "description": "description of node1",
+          "updated_at": "2025-09-09T18:40:38.250498674Z",
+          "id": "6bb4dd1f-0892-4705-939f-e9f8ec2bef28"
+        }
+      },
+      {
+        "name": "person2",
+        "content": "maria",
+        "connections": [],
+        "node_index": 0,
+        "metadata": {
+          "created_at": "2025-09-09T18:40:38.250499124Z",
+          "description": "description of node2",
+          "updated_at": "2025-09-09T18:40:38.250499124Z",
+          "id": "47353439-5272-415e-a1c5-522fd03c903e"
+        }
+      }
+    ],
+    "node_holes": [],
+    "edge_property": "undirected",
+    "edges": [
+      [
+        0,
+        1,
+        1
+      ]
+    ]
+  },
+  "edges": [
+    {
+      "name": "friendship",
+      "from": 0,
+      "to": 1,
+      "weight": 1,
+      "edge_index": 0,
+      "metadata": {
+        "created_at": "2025-09-09T18:40:38.250504604Z",
+        "description": "description of friendship",
+        "updated_at": "2025-09-09T18:40:38.250504604Z",
+        "id": "cb7fa6c6-5d35-498b-920c-5f2e48f79d45"
+      }
+    }
+  ],
+  "runtime_ref": {
+    "edges": [
+      {
+        "uuid": "cb7fa6c6-5d35-498b-920c-5f2e48f79d45",
+        "index": 0
+      }
+    ],
+    "nodes": [
+      {
+        "uuid": "6bb4dd1f-0892-4705-939f-e9f8ec2bef28",
+        "index": 0
+      },
+      {
+        "uuid": "47353439-5272-415e-a1c5-522fd03c903e",
+        "index": 1
+      }
+    ]
+  },
+  "metadata": {
+    "created_at": "2025-09-09T18:40:38.250485037Z",
+    "description": "test graph.",
+    "updated_at": "2025-09-09T18:40:38.250485037Z",
+    "id": "30d1b00a-3e85-4b3c-8c68-46b3d501b17f"
+  }
+}
