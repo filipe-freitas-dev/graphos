@@ -1,16 +1,18 @@
 use chrono::{DateTime, Utc};
 use petgraph::prelude::EdgeIndex;
 use petgraph::{EdgeType, Graph, graph::NodeIndex};
+use serde::{Deserialize, Serialize};
+use std::fs;
 use uuid::Uuid;
 
 // -----------RUNTIME-REF---------------------------------
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RuntimeRef {
     pub edges: Vec<Ref<EdgeIndex>>,
     pub nodes: Vec<Ref<NodeIndex>>,
 }
 // -----------RUNTIME---------------------------------
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Runtime<T, Ty: EdgeType> {
     pub name: String,
     pub core: Graph<Node<T>, u32, Ty>,
@@ -20,7 +22,11 @@ pub struct Runtime<T, Ty: EdgeType> {
     pub metadata: Metadata,
 }
 
-impl<T, Ty: EdgeType> Runtime<T, Ty> {
+impl<T, Ty: EdgeType> Runtime<T, Ty>
+where
+    T: Clone + Serialize + for<'de> Deserialize<'de>,
+    Ty: EdgeType + Serialize + for<'de> Deserialize<'de>,
+{
     pub fn new(name: &str) -> Self {
         let core = Graph::<Node<T>, u32, Ty>::default();
         let description = format!("{} graph.", name);
@@ -39,56 +45,68 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
 
     pub fn add_connection(
         &mut self,
-        from: Node<T>,
-        to: Node<T>,
+        mut from: Node<T>,
+        mut to: Node<T>,
         name: &str,
         description: &str,
     ) -> Result<(), String>
     where
         T: Clone,
     {
-        let mut from_clone = from.clone();
-        let mut to_clone = to.clone();
-        let from_idx = self.core.add_node(from);
-        let to_idx = self.core.add_node(to);
-        from_clone.node_index = Some(from_idx);
-        to_clone.node_index = Some(to_idx);
-        from_clone.connections.push(Ref {
-            uuid: from_clone.metadata.id,
+        // ---------- REUTILIZA OU ADICIONA NÓS ----------
+        // FROM
+        let from_idx = if let Some(existing_ref) = self
+            .runtime_ref
+            .nodes
+            .iter()
+            .find(|r| r.uuid == from.metadata.id)
+        {
+            existing_ref.index
+        } else {
+            let idx = self.core.add_node(from.clone());
+            from.node_index = Some(idx);
+            self.runtime_ref.nodes.push(Ref {
+                uuid: from.metadata.id,
+                index: idx,
+            });
+            self.nodes.push(from.clone());
+            idx
+        };
+
+        // TO
+        let to_idx = if let Some(existing_ref) = self
+            .runtime_ref
+            .nodes
+            .iter()
+            .find(|r| r.uuid == to.metadata.id)
+        {
+            existing_ref.index
+        } else {
+            let idx = self.core.add_node(to.clone());
+            to.node_index = Some(idx);
+            self.runtime_ref.nodes.push(Ref {
+                uuid: to.metadata.id,
+                index: idx,
+            });
+            self.nodes.push(to.clone());
+            idx
+        };
+
+        // ---------- CRIA CONEXÃO ----------
+        from.connections.push(Ref {
+            uuid: from.metadata.id,
             index: from_idx,
         });
-        to_clone.connections.push(Ref {
-            uuid: to_clone.metadata.id,
+        to.connections.push(Ref {
+            uuid: to.metadata.id,
             index: to_idx,
         });
-        if !self
-            .runtime_ref
-            .nodes
-            .iter()
-            .any(|r| r.uuid == from_clone.metadata.id)
-        {
-            self.runtime_ref.nodes.push(Ref {
-                uuid: from_clone.metadata.id,
-                index: from_idx,
-            });
-        }
-
-        if !self
-            .runtime_ref
-            .nodes
-            .iter()
-            .any(|r| r.uuid == to_clone.metadata.id)
-        {
-            self.runtime_ref.nodes.push(Ref {
-                uuid: to_clone.metadata.id,
-                index: to_idx,
-            });
-        }
 
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
         let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
 
+        // Evita duplicação de referências de aresta
         if !self
             .runtime_ref
             .edges
@@ -100,26 +118,49 @@ impl<T, Ty: EdgeType> Runtime<T, Ty> {
                 index: edge_index,
             });
         }
-        from_clone.metadata.update();
-        to_clone.metadata.update();
 
-        self.nodes.push(from_clone);
-        self.nodes.push(to_clone);
+        // Atualiza metadados dos nós
+        if let Some(node) = self
+            .nodes
+            .iter_mut()
+            .find(|n| n.metadata.id == from.metadata.id)
+        {
+            node.metadata.update();
+        }
+        if let Some(node) = self
+            .nodes
+            .iter_mut()
+            .find(|n| n.metadata.id == to.metadata.id)
+        {
+            node.metadata.update();
+        }
+
         self.edges.push(edge);
 
         Ok(())
     }
+
+    pub fn save_to_file(&self, path: &str) -> Result<(), String> {
+        let json = serde_json::to_string_pretty(self)
+            .map_err(|e| format!("Erro ao serializar Runtime: {}", e))?;
+        fs::write(path, json).map_err(|e| format!("Erro ao escrever arquivo: {}", e))
+    }
+
+    pub fn load_from_file(path: &str) -> Result<Self, String> {
+        let data = fs::read_to_string(path).map_err(|e| format!("Erro ao ler arquivo: {}", e))?;
+        serde_json::from_str(&data).map_err(|e| format!("Erro ao desserializar Runtime: {}", e))
+    }
 }
 
 // -----------REFS---------------------------------
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Ref<I> {
     pub uuid: Uuid,
     pub index: I,
 }
 
 // -----------NODE---------------------------------
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Node<T> {
     pub name: String,
     pub content: T,
@@ -146,7 +187,7 @@ impl<T> Node<T> {
 }
 
 // -----------EDGE---------------------------------
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Edge {
     pub name: String,
     pub from: NodeIndex,
@@ -177,7 +218,7 @@ impl Edge {
 }
 
 // -----------METADATA---------------------------------
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Metadata {
     pub created_at: DateTime<Utc>,
     pub description: String,

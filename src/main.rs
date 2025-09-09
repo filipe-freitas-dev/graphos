@@ -6,14 +6,24 @@ use crate::models::graph_models::Runtime;
 mod models;
 
 fn main() {
-    let mut runtime = Runtime::<&str, Undirected>::new("test");
+    let mut runtime = Runtime::<String, Undirected>::new("test");
     let _ = runtime.add_connection(
-        Node::new("person1", "filipe", vec![], "description of node1"),
-        Node::new("person2", "maria", vec![], "description of node2"),
+        Node::new(
+            "person1",
+            "filipe".to_string(),
+            vec![],
+            "description of node1",
+        ),
+        Node::new(
+            "person2",
+            "maria".to_string(),
+            vec![],
+            "description of node2",
+        ),
         "friendship",
         "description of friendship",
     );
-    println!("{:#?}", runtime.edges);
-    println!("{:#?}", runtime.nodes);
-    println!("{:#?}", runtime.runtime_ref);
+    println!("Graph edges: {:#?}", runtime.edges);
+    println!("Graph nodes: {:#?}", runtime.nodes);
+    println!("Graph runtime references: {:#?}", runtime.runtime_ref);
 }
