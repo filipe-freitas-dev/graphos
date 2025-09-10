@@ -1,0 +1,229 @@
+{
+  "name": "graphos",
+  "core": {
+    "nodes": [
+      {
+        "name": "person1",
+        "content": {
+          "Text": "filipe"
+        },
+        "energy": 1,
+        "connections": [
+          {
+            "node": {
+              "uuid": "2a948e53-ad0a-48d0-a60b-6b56ada6d3d4",
+              "name": "person2",
+              "index": 1
+            },
+            "edge": {
+              "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+              "name": "friendship",
+              "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+            }
+          }
+        ],
+        "node_index": 0,
+        "metadata": {
+          "id": "4a441982-741e-4f3c-846f-504770833b7e",
+          "description": "description of node1",
+          "created_at": "2025-09-10T14:36:29.243782623Z",
+          "updated_at": "2025-09-10T14:36:29.243782623Z"
+        }
+      },
+      {
+        "name": "person2",
+        "content": {
+          "Text": "maria"
+        },
+        "energy": 3,
+        "connections": [
+          {
+            "node": {
+              "uuid": "4a441982-741e-4f3c-846f-504770833b7e",
+              "name": "person1",
+              "index": 0
+            },
+            "edge": {
+              "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+              "name": "friendship",
+              "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+            }
+          },
+          {
+            "node": {
+              "uuid": "f1c7b72c-3de6-4f28-bc9d-6d6930fd1659",
+              "name": "person3",
+              "index": 2
+            },
+            "edge": {
+              "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+              "name": "friendship",
+              "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+            }
+          },
+          {
+            "node": {
+              "uuid": "4b2efc2b-c7fa-4578-8483-50a950cd7f16",
+              "name": "person4",
+              "index": 3
+            },
+            "edge": {
+              "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+              "name": "friendship",
+              "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+            }
+          }
+        ],
+        "node_index": 1,
+        "metadata": {
+          "id": "2a948e53-ad0a-48d0-a60b-6b56ada6d3d4",
+          "description": "description of node2",
+          "created_at": "2025-09-10T14:36:29.243783633Z",
+          "updated_at": "2025-09-10T14:36:29.243783633Z"
+        }
+      },
+      {
+        "name": "person3",
+        "content": {
+          "Text": "joao"
+        },
+        "energy": 1,
+        "connections": [
+          {
+            "node": {
+              "uuid": "2a948e53-ad0a-48d0-a60b-6b56ada6d3d4",
+              "name": "person2",
+              "index": 1
+            },
+            "edge": {
+              "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+              "name": "friendship",
+              "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+            }
+          }
+        ],
+        "node_index": 2,
+        "metadata": {
+          "id": "f1c7b72c-3de6-4f28-bc9d-6d6930fd1659",
+          "description": "description of node3",
+          "created_at": "2025-09-10T14:36:29.243804989Z",
+          "updated_at": "2025-09-10T14:36:29.243804989Z"
+        }
+      },
+      {
+        "name": "person4",
+        "content": {
+          "Text": "henrique"
+        },
+        "energy": 1,
+        "connections": [
+          {
+            "node": {
+              "uuid": "2a948e53-ad0a-48d0-a60b-6b56ada6d3d4",
+              "name": "person2",
+              "index": 1
+            },
+            "edge": {
+              "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+              "name": "friendship",
+              "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+            }
+          }
+        ],
+        "node_index": 3,
+        "metadata": {
+          "id": "4b2efc2b-c7fa-4578-8483-50a950cd7f16",
+          "description": "description of node4",
+          "created_at": "2025-09-10T14:36:29.243811318Z",
+          "updated_at": "2025-09-10T14:36:29.243811318Z"
+        }
+      }
+    ],
+    "node_holes": [],
+    "edge_property": "undirected",
+    "edges": [
+      [
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        3,
+        1
+      ]
+    ]
+  },
+  "edges": [],
+  "runtime_ref": {
+    "edges": [
+      {
+        "uuid": "71c271d0-521b-4e7f-9d19-ef1bdd5c8d41",
+        "name": "friendship",
+        "index": 0
+      },
+      {
+        "uuid": "7de107ee-41ee-4ad9-9e87-6f10994a6715",
+        "name": "friendship",
+        "index": 1
+      },
+      {
+        "uuid": "378bf027-72df-454d-8ad8-3baee66b6f44",
+        "name": "friendship",
+        "index": 2
+      }
+    ],
+    "nodes": [
+      {
+        "uuid": "2a948e53-ad0a-48d0-a60b-6b56ada6d3d4",
+        "name": "person2",
+        "index": 1
+      },
+      {
+        "uuid": "4a441982-741e-4f3c-846f-504770833b7e",
+        "name": "person1",
+        "index": 0
+      },
+      {
+        "uuid": "f1c7b72c-3de6-4f28-bc9d-6d6930fd1659",
+        "name": "person3",
+        "index": 2
+      },
+      {
+        "uuid": "4b2efc2b-c7fa-4578-8483-50a950cd7f16",
+        "name": "person4",
+        "index": 3
+      }
+    ],
+    "edge_kinds": [
+      {
+        "uuid": "4b693d61-bed3-4f03-839b-36ba66709205",
+        "name": "friendship",
+        "index": "4b693d61-bed3-4f03-839b-36ba66709205"
+      }
+    ]
+  },
+  "metadata": {
+    "id": "d7ea3c90-cab8-4301-b6e7-388fee50a554",
+    "description": "graphos graph.",
+    "created_at": "2025-09-10T14:36:29.243758453Z",
+    "updated_at": "2025-09-10T14:36:29.243758453Z"
+  },
+  "edge_kinds": [
+    {
+      "name": "friendship",
+      "energy": 3,
+      "metadata": {
+        "id": "4b693d61-bed3-4f03-839b-36ba66709205",
+        "description": "description of friendship",
+        "created_at": "2025-09-10T14:36:29.243799015Z",
+        "updated_at": "2025-09-10T14:36:29.243799015Z"
+      }
+    }
+  ]
+}

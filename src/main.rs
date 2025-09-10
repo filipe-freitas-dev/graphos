@@ -2,22 +2,23 @@ use petgraph::Undirected;
 
 use crate::models::graph_models::Grapho;
 use crate::models::graph_models::Node;
+use crate::models::node_types::NodeTypes;
 
 mod models;
 const BASEPATH: &str = "./files";
 
 fn main() {
-    let mut runtime = Grapho::<String, Undirected>::new("test");
+    let mut runtime = Grapho::<NodeTypes, Undirected>::new("graphos");
     let _ = runtime.add_connection(
         Node::new(
             "person1",
-            "filipe".to_string(),
+            NodeTypes::Text("filipe".to_string()),
             vec![],
             "description of node1",
         ),
         Node::new(
             "person2",
-            "maria".to_string(),
+            NodeTypes::Text("maria".to_string()),
             vec![],
             "description of node2",
         ),
@@ -27,13 +28,13 @@ fn main() {
     let _ = runtime.add_connection(
         Node::new(
             "person2",
-            "maria".to_string(),
+            NodeTypes::Text("maria".to_string()),
             vec![],
             "description of node2",
         ),
         Node::new(
             "person3",
-            "joao".to_string(),
+            NodeTypes::Text("joao".to_string()),
             vec![],
             "description of node3",
         ),
@@ -43,13 +44,13 @@ fn main() {
     let _ = runtime.add_connection(
         Node::new(
             "person2",
-            "maria".to_string(),
+            NodeTypes::Text("maria".to_string()),
             vec![],
             "description of node2",
         ),
         Node::new(
             "person4",
-            "henrique".to_string(),
+            NodeTypes::Text("henrique".to_string()),
             vec![],
             "description of node4",
         ),
@@ -70,7 +71,8 @@ fn main() {
     } else {
         println!("Graph distance: could not find required nodes");
     }
-    runtime
-        .save_to_file(&format!("{}/{}.json", BASEPATH, runtime.name))
-        .unwrap()
+    let full_path = format!("{}/{}.json", BASEPATH, runtime.name);
+    runtime.save_to_file(&full_path).unwrap();
+    let new_graph = Grapho::<NodeTypes, Undirected>::load_from_file(&full_path).unwrap();
+    println!("New graph: {:#?}", new_graph);
 }
