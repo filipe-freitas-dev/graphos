@@ -51,7 +51,6 @@ where
         let from_idx = self.get_or_add_node(from);
         let to_idx = self.get_or_add_node(to);
 
-        // Se já existir uma aresta com o mesmo nome entre este par de nós (qualquer direção), não cria novamente
         let existing_edge_props: Option<EdgeProps> = self.core[from_idx]
             .connections
             .iter()
@@ -75,7 +74,6 @@ where
         let already_exists = existing_edge_props.is_some();
 
         if already_exists {
-            // Mesmo se já existir a aresta, garantimos que as conexões e energias estão consistentes
             let from_uuid = self.core[from_idx].metadata.id;
             let to_uuid = self.core[to_idx].metadata.id;
             let edge_props: EdgeProps = existing_edge_props.unwrap();
@@ -115,13 +113,9 @@ where
             return Ok(());
         }
 
-        // Cria relação no grafo e obtém índice da aresta
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
-        // Cria aresta rica
         let edge = EdgeProps::new(name, from_idx, to_idx, 1, edge_index, description);
-
-        // Adiciona no vetor de arestas e nas referências
         if !self
             .runtime_ref
             .edges
@@ -139,11 +133,9 @@ where
             index: edge_index,
         });
 
-        // Atualiza conexões dos nós e energia (tamanho das conexões)
         let from_uuid = self.core[from_idx].metadata.id;
         let to_uuid = self.core[to_idx].metadata.id;
 
-        // Evita duplicação de conexões
         if !self.core[from_idx]
             .connections
             .iter()
@@ -171,7 +163,6 @@ where
             });
         }
 
-        // Mantém o node_index sincronizado e recalcula energia
         self.core[from_idx].node_index = from_idx;
         self.core[to_idx].node_index = to_idx;
         self.core[from_idx].energy = self.core[from_idx].connections.len() as u32;
@@ -181,22 +172,16 @@ where
     }
 
     fn get_or_add_node(&mut self, node: Node<T>) -> NodeIndex {
-        // Tenta encontrar um nó existente pelo "name" do nó
         if let Some(existing_idx) = self
             .core
             .node_indices()
             .find(|&idx| self.core[idx].name == node.name)
         {
-            // garante que o campo node_index está consistente
             self.core[existing_idx].node_index = existing_idx;
             return existing_idx;
         }
-
-        // Caso não exista, cria o nó no grafo e registra a referência de runtime
         let idx = self.core.add_node(node.clone());
-        // sincroniza o node_index no próprio nó recém adicionado
         self.core[idx].node_index = idx;
-        // energia inicialmente baseada nas conexões atuais do nó
         self.core[idx].energy = self.core[idx].connections.len() as u32;
         self.runtime_ref.nodes.push(Ref {
             uuid: node.metadata.id,

@@ -9,7 +9,7 @@
         "connections": [
           {
             "node": {
-              "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+              "uuid": "0193b6c5-38c5-4f3e-bbd4-2e1afcc7bccc",
               "index": 1
             },
             "edge": {
@@ -19,20 +19,20 @@
               "weight": 1,
               "edge_index": 0,
               "metadata": {
-                "id": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+                "id": "f80a0eac-aea1-4bca-901f-939df9057f78",
                 "description": "description of friendship",
-                "created_at": "2025-09-10T03:23:56.842589558Z",
-                "updated_at": "2025-09-10T03:23:56.842589558Z"
+                "created_at": "2025-09-10T03:46:30.039528541Z",
+                "updated_at": "2025-09-10T03:46:30.039528541Z"
               }
             }
           }
         ],
         "node_index": 0,
         "metadata": {
-          "id": "fcb0ac65-7fcd-4880-bbb9-75127e5092f8",
+          "id": "9182063c-b29f-45f2-b407-55ab8967f993",
           "description": "description of node1",
-          "created_at": "2025-09-10T03:23:56.842579895Z",
-          "updated_at": "2025-09-10T03:23:56.842579895Z"
+          "created_at": "2025-09-10T03:46:30.039519233Z",
+          "updated_at": "2025-09-10T03:46:30.039519233Z"
         }
       },
       {
@@ -42,7 +42,7 @@
         "connections": [
           {
             "node": {
-              "uuid": "fcb0ac65-7fcd-4880-bbb9-75127e5092f8",
+              "uuid": "9182063c-b29f-45f2-b407-55ab8967f993",
               "index": 0
             },
             "edge": {
@@ -52,16 +52,16 @@
               "weight": 1,
               "edge_index": 0,
               "metadata": {
-                "id": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+                "id": "f80a0eac-aea1-4bca-901f-939df9057f78",
                 "description": "description of friendship",
-                "created_at": "2025-09-10T03:23:56.842589558Z",
-                "updated_at": "2025-09-10T03:23:56.842589558Z"
+                "created_at": "2025-09-10T03:46:30.039528541Z",
+                "updated_at": "2025-09-10T03:46:30.039528541Z"
               }
             }
           },
           {
             "node": {
-              "uuid": "512e2249-36a5-44c6-a2a2-686bd4d8a580",
+              "uuid": "e33248af-4930-4bc3-bd4e-5e17b93672d1",
               "index": 2
             },
             "edge": {
@@ -71,16 +71,16 @@
               "weight": 1,
               "edge_index": 1,
               "metadata": {
-                "id": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+                "id": "2cd8871c-6702-461f-bccd-4adc549aeb32",
                 "description": "description of friendship",
-                "created_at": "2025-09-10T03:23:56.842592641Z",
-                "updated_at": "2025-09-10T03:23:56.842592641Z"
+                "created_at": "2025-09-10T03:46:30.039531494Z",
+                "updated_at": "2025-09-10T03:46:30.039531494Z"
               }
             }
           },
           {
             "node": {
-              "uuid": "34dd5355-13a9-4d30-994d-2b1d1aa1a7d1",
+              "uuid": "f19ff8df-aede-4d38-a6c1-262a696654d6",
               "index": 3
             },
             "edge": {
@@ -90,20 +90,20 @@
               "weight": 1,
               "edge_index": 2,
               "metadata": {
-                "id": "bb548404-8f99-41d0-84a4-6204f6728184",
+                "id": "da182cdb-1db3-4e62-8c34-76814daca3db",
                 "description": "description of friendship",
-                "created_at": "2025-09-10T03:23:56.842595322Z",
-                "updated_at": "2025-09-10T03:23:56.842595322Z"
+                "created_at": "2025-09-10T03:46:30.039534004Z",
+                "updated_at": "2025-09-10T03:46:30.039534004Z"
               }
             }
           }
         ],
         "node_index": 1,
         "metadata": {
-          "id": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+          "id": "0193b6c5-38c5-4f3e-bbd4-2e1afcc7bccc",
           "description": "description of node2",
-          "created_at": "2025-09-10T03:23:56.842580394Z",
-          "updated_at": "2025-09-10T03:23:56.842580394Z"
+          "created_at": "2025-09-10T03:46:30.039519747Z",
+          "updated_at": "2025-09-10T03:46:30.039519747Z"
         }
       },
       {
@@ -113,7 +113,7 @@
         "connections": [
           {
             "node": {
-              "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+              "uuid": "0193b6c5-38c5-4f3e-bbd4-2e1afcc7bccc",
               "index": 1
             },
             "edge": {
@@ -123,20 +123,20 @@
               "weight": 1,
               "edge_index": 1,
               "metadata": {
-                "id": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+                "id": "2cd8871c-6702-461f-bccd-4adc549aeb32",
                 "description": "description of friendship",
-                "created_at": "2025-09-10T03:23:56.842592641Z",
-                "updated_at": "2025-09-10T03:23:56.842592641Z"
+                "created_at": "2025-09-10T03:46:30.039531494Z",
+                "updated_at": "2025-09-10T03:46:30.039531494Z"
               }
             }
           }
         ],
         "node_index": 2,
         "metadata": {
-          "id": "512e2249-36a5-44c6-a2a2-686bd4d8a580",
+          "id": "e33248af-4930-4bc3-bd4e-5e17b93672d1",
           "description": "description of node3",
-          "created_at": "2025-09-10T03:23:56.842591372Z",
-          "updated_at": "2025-09-10T03:23:56.842591372Z"
+          "created_at": "2025-09-10T03:46:30.039530306Z",
+          "updated_at": "2025-09-10T03:46:30.039530306Z"
         }
       },
       {
@@ -146,7 +146,7 @@
         "connections": [
           {
             "node": {
-              "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+              "uuid": "0193b6c5-38c5-4f3e-bbd4-2e1afcc7bccc",
               "index": 1
             },
             "edge": {
@@ -156,20 +156,20 @@
               "weight": 1,
               "edge_index": 2,
               "metadata": {
-                "id": "bb548404-8f99-41d0-84a4-6204f6728184",
+                "id": "da182cdb-1db3-4e62-8c34-76814daca3db",
                 "description": "description of friendship",
-                "created_at": "2025-09-10T03:23:56.842595322Z",
-                "updated_at": "2025-09-10T03:23:56.842595322Z"
+                "created_at": "2025-09-10T03:46:30.039534004Z",
+                "updated_at": "2025-09-10T03:46:30.039534004Z"
               }
             }
           }
         ],
         "node_index": 3,
         "metadata": {
-          "id": "34dd5355-13a9-4d30-994d-2b1d1aa1a7d1",
+          "id": "f19ff8df-aede-4d38-a6c1-262a696654d6",
           "description": "description of node4",
-          "created_at": "2025-09-10T03:23:56.842594193Z",
-          "updated_at": "2025-09-10T03:23:56.842594193Z"
+          "created_at": "2025-09-10T03:46:30.039532966Z",
+          "updated_at": "2025-09-10T03:46:30.039532966Z"
         }
       }
     ],
@@ -195,56 +195,56 @@
   },
   "edges": [
     {
-      "uuid": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+      "uuid": "f80a0eac-aea1-4bca-901f-939df9057f78",
       "index": 0
     },
     {
-      "uuid": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+      "uuid": "2cd8871c-6702-461f-bccd-4adc549aeb32",
       "index": 1
     },
     {
-      "uuid": "bb548404-8f99-41d0-84a4-6204f6728184",
+      "uuid": "da182cdb-1db3-4e62-8c34-76814daca3db",
       "index": 2
     }
   ],
   "runtime_ref": {
     "edges": [
       {
-        "uuid": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+        "uuid": "f80a0eac-aea1-4bca-901f-939df9057f78",
         "index": 0
       },
       {
-        "uuid": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+        "uuid": "2cd8871c-6702-461f-bccd-4adc549aeb32",
         "index": 1
       },
       {
-        "uuid": "bb548404-8f99-41d0-84a4-6204f6728184",
+        "uuid": "da182cdb-1db3-4e62-8c34-76814daca3db",
         "index": 2
       }
     ],
     "nodes": [
       {
-        "uuid": "fcb0ac65-7fcd-4880-bbb9-75127e5092f8",
+        "uuid": "9182063c-b29f-45f2-b407-55ab8967f993",
         "index": 0
       },
       {
-        "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+        "uuid": "0193b6c5-38c5-4f3e-bbd4-2e1afcc7bccc",
         "index": 1
       },
       {
-        "uuid": "512e2249-36a5-44c6-a2a2-686bd4d8a580",
+        "uuid": "e33248af-4930-4bc3-bd4e-5e17b93672d1",
         "index": 2
       },
       {
-        "uuid": "34dd5355-13a9-4d30-994d-2b1d1aa1a7d1",
+        "uuid": "f19ff8df-aede-4d38-a6c1-262a696654d6",
         "index": 3
       }
     ]
   },
   "metadata": {
-    "id": "f4e8a862-74d3-4c29-88f1-0f95af38679e",
+    "id": "15a34edd-46a3-412c-a858-424e451e1200",
     "description": "test graph.",
-    "created_at": "2025-09-10T03:23:56.842566230Z",
-    "updated_at": "2025-09-10T03:23:56.842566230Z"
+    "created_at": "2025-09-10T03:46:30.039508199Z",
+    "updated_at": "2025-09-10T03:46:30.039508199Z"
   }
 }
