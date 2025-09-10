@@ -294,11 +294,11 @@ where
 
     pub fn save_to_file_encrypted(&self, path: &str, passphrase: &str) -> Result<(), String> {
         let mut clone = self.clone_for_save();
-        crate::persist::save_encrypted(&clone, path, passphrase)
+        crate::runtime::persist::save_encrypted(&clone, path, passphrase)
     }
 
     pub fn load_from_file_encrypted(path: &str, passphrase: &str) -> Result<Self, String> {
-        let mut g: Self = crate::persist::load_encrypted(path, passphrase)?;
+        let mut g: Self = crate::runtime::persist::load_encrypted(path, passphrase)?;
         g.rebuild_indexes();
         Ok(g)
     }

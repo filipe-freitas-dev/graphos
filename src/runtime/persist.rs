@@ -1,8 +1,8 @@
 use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
+use rand::Rng;
 use rand::rngs::OsRng;
-use rand::{Rng, RngCore};
 use serde::{Serialize, de::DeserializeOwned};
 use std::fs;
 
@@ -14,7 +14,7 @@ pub enum PersistError {
     Io(String),
     Serde(String),
     Crypto(String),
-    Format(String),
+    // Format(String),
 }
 
 impl From<std::io::Error> for PersistError {
@@ -30,7 +30,7 @@ impl From<serde_json::Error> for PersistError {
 }
 
 fn derive_key(passphrase: &str, salt: &[u8]) -> Result<[u8; 32], PersistError> {
-    let salt_str = SaltString::b64_encode(salt).map_err(|e| PersistError::Crypto(e.to_string()))?;
+    let salt_str = SaltString::encode_b64(salt).map_err(|e| PersistError::Crypto(e.to_string()))?;
     let argon2 = Argon2::default();
     let password_hash = argon2
         .hash_password(passphrase.as_bytes(), &salt_str)
