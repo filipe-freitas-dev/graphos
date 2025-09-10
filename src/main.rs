@@ -2,23 +2,25 @@ use petgraph::Undirected;
 
 use crate::models::graph_models::Grapho;
 use crate::models::graph_models::Node;
-use crate::models::node_types::NodeTypes;
+use crate::models::node_types::NodeType;
 
 mod models;
+mod persist;
+mod runtime;
 const BASEPATH: &str = "./files";
 
 fn main() {
-    let mut runtime = Grapho::<NodeTypes, Undirected>::new("graphos");
+    let mut runtime = Grapho::<NodeType, Undirected>::new("graphos");
     let _ = runtime.add_connection(
         Node::new(
             "person1",
-            NodeTypes::Text("filipe".to_string()),
+            NodeType::Text("filipe".to_string()),
             vec![],
             "description of node1",
         ),
         Node::new(
             "person2",
-            NodeTypes::Text("maria".to_string()),
+            NodeType::Text("maria".to_string()),
             vec![],
             "description of node2",
         ),
@@ -28,13 +30,13 @@ fn main() {
     let _ = runtime.add_connection(
         Node::new(
             "person2",
-            NodeTypes::Text("maria".to_string()),
+            NodeType::Text("maria".to_string()),
             vec![],
             "description of node2",
         ),
         Node::new(
             "person3",
-            NodeTypes::Text("joao".to_string()),
+            NodeType::Text("joao".to_string()),
             vec![],
             "description of node3",
         ),
@@ -44,35 +46,43 @@ fn main() {
     let _ = runtime.add_connection(
         Node::new(
             "person2",
-            NodeTypes::Text("maria".to_string()),
+            NodeType::Text("maria".to_string()),
             vec![],
             "description of node2",
         ),
         Node::new(
             "person4",
-            NodeTypes::Text("henrique".to_string()),
+            NodeType::Text("henrique".to_string()),
             vec![],
             "description of node4",
         ),
         "friendship",
         "description of friendship",
     );
-    println!("Graph edges: {:#?}", runtime.edges);
-    println!("Core: {:#?}", runtime.core);
-    println!("Graph runtime references: {:#?}", runtime.runtime_ref);
-    if let (Some(a), Some(b)) = (
-        runtime.get_node_index_by_name("person4"),
-        runtime.get_node_index_by_name("person3"),
-    ) {
-        println!(
-            "Graph distance: {:#?}",
-            runtime.calculate_distance(a, b).unwrap()
-        );
-    } else {
-        println!("Graph distance: could not find required nodes");
-    }
+    // println!("Graph edges: {:#?}", runtime.edges);
+    // println!("Core: {:#?}", runtime.core);
+    // println!("Graph runtime references: {:#?}", runtime.runtime_ref);
+    // if let (Some(a), Some(b)) = (
+    //     runtime.get_node_index_by_name("person4"),
+    //     runtime.get_node_index_by_name("person3"),
+    // ) {
+    //     println!(
+    //         "Graph distance: {:#?}",
+    //         runtime.calculate_distance(a, b).unwrap()
+    //     );
+    // } else {
+    //     println!("Graph distance: could not find required nodes");
+    // }
     let full_path = format!("{}/{}.json", BASEPATH, runtime.name);
     runtime.save_to_file(&full_path).unwrap();
-    let new_graph = Grapho::<NodeTypes, Undirected>::load_from_file(&full_path).unwrap();
+    let new_graph = Grapho::<NodeType, Undirected>::load_from_file(&full_path).unwrap();
     println!("New graph: {:#?}", new_graph);
+
+    let enc_path = format!("{}/{}-enc.bin", BASEPATH, new_graph.name);
+    let pass = "change-this-passphrase";
+    new_graph.save_to_file_encrypted(&enc_path, pass).unwrap();
+    let _new_graph_enc = Grapho::<NodeType, Undirected>::load_from_file_encrypted(&enc_path, pass).unwrap();
+
+    let mut global = runtime::GraphRuntime::<NodeType, Undirected>::new();
+    global.add_graph(new_graph);
 }

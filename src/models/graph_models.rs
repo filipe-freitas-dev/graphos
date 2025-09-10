@@ -1,32 +1,35 @@
-use crate::models::node_types::NodeTypesProps;
+use crate::models::node_types::NodeTypes;
 use chrono::{DateTime, Utc};
 use petgraph::prelude::EdgeIndex;
 use petgraph::{EdgeType, Graph, graph::NodeIndex};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 use uuid::Uuid;
 
 // -----------RUNTIME-REF---------------------------------
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RuntimeRef {
     // Instances in petgraph core
     pub edges: Vec<Ref<EdgeIndex>>, // edge instance catalog (by core index)
     pub nodes: Vec<Ref<NodeIndex>>, // node catalog (by core index)
     // Reusable edge kinds catalog
-    pub edge_kinds: Vec<Ref<Uuid>>, // reference to edge kind id by name
+    pub edge_kinds: Vec<EdgeKindRef>, // reference to edge kind id by name
 }
 // -----------RUNTIME---------------------------------
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Grapho<T: NodeTypesProps, Ty: EdgeType> {
+pub struct Grapho<T: NodeTypes, Ty: EdgeType> {
     pub name: String,
     pub core: Graph<Node<T>, u32, Ty>,
     pub edges: Vec<Ref<EdgeIndex>>, // edge instances (core edges)
     pub runtime_ref: RuntimeRef,
     pub metadata: Metadata,
     pub edge_kinds: Vec<EdgeKind>, // reusable kinds (e.g., friendship)
+    #[serde(skip)]
+    node_index_by_name: HashMap<String, NodeIndex>,
 }
 
-impl<T: NodeTypesProps, Ty: EdgeType> Grapho<T, Ty>
+impl<T: NodeTypes, Ty: EdgeType> Grapho<T, Ty>
 where
     T: Clone + Serialize + for<'de> Deserialize<'de>,
     Ty: EdgeType + Serialize + for<'de> Deserialize<'de>,
@@ -45,6 +48,7 @@ where
             },
             metadata: Metadata::new(description),
             edge_kinds: vec![],
+            node_index_by_name: HashMap::new(),
         }
     }
 
@@ -57,9 +61,28 @@ where
     ) -> Result<(), String> {
         let from_idx = self.get_or_add_node(&from);
         let to_idx = self.get_or_add_node(&to);
+        if let Some(edge_ref) = self.find_existing_connection(name, from_idx, to_idx) {
+            self.ensure_connections_present(from_idx, to_idx, &from, &to, edge_ref);
+            self.update_metrics_and_sort(from_idx, to_idx);
+            return Ok(());
+        }
+        let edge_index = self.add_core_edge(from_idx, to_idx);
+        let edge_kind_id = self.get_or_create_edge_kind(name, description);
+        self.increment_edge_kind_energy(edge_kind_id);
+        self.ensure_runtime_edge_instance(name, edge_index);
+        self.ensure_runtime_edge_kind(name, edge_kind_id);
+        self.push_connection(from_idx, to_idx, &from, &to, name, edge_kind_id);
+        self.update_metrics_and_sort(from_idx, to_idx);
+        Ok(())
+    }
 
-        // Check if this exact connection (between from_idx and to_idx) with same edge kind name already exists
-        let existing_edge_ref: Option<Ref<Uuid>> = self.core[from_idx]
+    fn find_existing_connection(
+        &self,
+        name: &str,
+        from_idx: NodeIndex,
+        to_idx: NodeIndex,
+    ) -> Option<Ref<Uuid>> {
+        self.core[from_idx]
             .connections
             .iter()
             .find(|c| c.edge.name == name && c.node.index == to_idx)
@@ -70,62 +93,64 @@ where
                     .iter()
                     .find(|c| c.edge.name == name && c.node.index == from_idx)
                     .map(|c| c.edge.clone())
+            })
+    }
+
+    fn ensure_connections_present(
+        &mut self,
+        from_idx: NodeIndex,
+        to_idx: NodeIndex,
+        from: &Node<T>,
+        to: &Node<T>,
+        edge_ref: Ref<Uuid>,
+    ) {
+        let from_uuid = self.core[from_idx].metadata.id;
+        let to_uuid = self.core[to_idx].metadata.id;
+        if !self.core[from_idx]
+            .connections
+            .iter()
+            .any(|r| r.node.index == to_idx)
+        {
+            self.core[from_idx].connections.push(Connection {
+                node: Ref {
+                    name: to.name.clone(),
+                    uuid: to_uuid,
+                    index: to_idx,
+                },
+                edge: edge_ref.clone(),
             });
-        let already_exists = existing_edge_ref.is_some();
-
-        if already_exists {
-            let from_uuid = self.core[from_idx].metadata.id;
-            let to_uuid = self.core[to_idx].metadata.id;
-            let edge_ref: Ref<Uuid> = existing_edge_ref.unwrap();
-
-            if !self.core[from_idx]
-                .connections
-                .iter()
-                .any(|r| r.node.index == to_idx)
-            {
-                self.core[from_idx].connections.push(Connection {
-                    node: Ref {
-                        name: to.name.clone(),
-                        uuid: to_uuid,
-                        index: to_idx,
-                    },
-                    edge: edge_ref.clone(),
-                });
-            }
-            if !self.core[to_idx]
-                .connections
-                .iter()
-                .any(|r| r.node.index == from_idx)
-            {
-                self.core[to_idx].connections.push(Connection {
-                    node: Ref {
-                        name: from.name.clone(),
-                        uuid: from_uuid,
-                        index: from_idx,
-                    },
-                    edge: edge_ref.clone(),
-                });
-            }
-
-            self.core[from_idx].node_index = from_idx;
-            self.core[to_idx].node_index = to_idx;
-            self.core[from_idx].energy = self.core[from_idx].connections.len() as u32;
-            self.core[to_idx].energy = self.core[to_idx].connections.len() as u32;
-
-            return Ok(());
         }
+        if !self.core[to_idx]
+            .connections
+            .iter()
+            .any(|r| r.node.index == from_idx)
+        {
+            self.core[to_idx].connections.push(Connection {
+                node: Ref {
+                    name: from.name.clone(),
+                    uuid: from_uuid,
+                    index: from_idx,
+                },
+                edge: edge_ref,
+            });
+        }
+    }
 
-        let edge_index = self.core.add_edge(from_idx, to_idx, 1);
-        // Find or create edge kind by name
-        let edge_kind_id = if let Some(kind) = self.edge_kinds.iter().find(|k| k.name == name) {
-            kind.metadata.id
-        } else {
-            let kind = EdgeKind::new(name, description);
-            let id = kind.metadata.id;
-            self.edge_kinds.push(kind);
-            id
-        };
-        // Increment energy on edge kind for each new connection
+    fn add_core_edge(&mut self, from_idx: NodeIndex, to_idx: NodeIndex) -> EdgeIndex {
+        self.core.add_edge(from_idx, to_idx, 1)
+    }
+
+    fn get_or_create_edge_kind(&mut self, name: &str, description: &str) -> Uuid {
+        if let Some(kind) = self.edge_kinds.iter().find(|k| k.name == name) {
+            return kind.metadata.id;
+        }
+        let kind = EdgeKind::new(name, description);
+        let id = kind.metadata.id;
+        self.edge_kinds.push(kind);
+        id
+    }
+
+    fn increment_edge_kind_energy(&mut self, edge_kind_id: Uuid) {
         if let Some(kind) = self
             .edge_kinds
             .iter_mut()
@@ -133,7 +158,9 @@ where
         {
             kind.energy = kind.energy.saturating_add(1);
         }
-        // Track runtime ref of this specific edge instance in the petgraph core
+    }
+
+    fn ensure_runtime_edge_instance(&mut self, name: &str, edge_index: EdgeIndex) {
         if !self.runtime_ref.edges.iter().any(|r| r.index == edge_index) {
             self.runtime_ref.edges.push(Ref {
                 name: name.to_string(),
@@ -141,23 +168,33 @@ where
                 index: edge_index,
             });
         }
-        // Track runtime ref for edge kind
+    }
+
+    fn ensure_runtime_edge_kind(&mut self, name: &str, edge_kind_id: Uuid) {
         if !self
             .runtime_ref
             .edge_kinds
             .iter()
             .any(|r| r.uuid == edge_kind_id)
         {
-            self.runtime_ref.edge_kinds.push(Ref {
+            self.runtime_ref.edge_kinds.push(EdgeKindRef {
                 name: name.to_string(),
                 uuid: edge_kind_id,
-                index: edge_kind_id,
             });
         }
+    }
 
+    fn push_connection(
+        &mut self,
+        from_idx: NodeIndex,
+        to_idx: NodeIndex,
+        from: &Node<T>,
+        to: &Node<T>,
+        name: &str,
+        edge_kind_id: Uuid,
+    ) {
         let from_uuid = self.core[from_idx].metadata.id;
         let to_uuid = self.core[to_idx].metadata.id;
-
         if !self.core[from_idx]
             .connections
             .iter()
@@ -194,28 +231,22 @@ where
                 },
             });
         }
+    }
 
+    fn update_metrics_and_sort(&mut self, from_idx: NodeIndex, to_idx: NodeIndex) {
         self.core[from_idx].node_index = from_idx;
         self.core[to_idx].node_index = to_idx;
         self.core[from_idx].energy = self.core[from_idx].connections.len() as u32;
         self.core[to_idx].energy = self.core[to_idx].connections.len() as u32;
-
-        // Keep runtime nodes sorted by descending energy (relevance)
         self.runtime_ref
             .nodes
             .sort_by(|a, b| self.core[b.index].energy.cmp(&self.core[a.index].energy));
-
-        Ok(())
     }
 
     fn get_or_add_node(&mut self, node: &Node<T>) -> NodeIndex {
-        if let Some(existing_idx) = self
-            .core
-            .node_indices()
-            .find(|&idx| self.core[idx].name == node.name)
-        {
-            self.core[existing_idx].node_index = existing_idx;
-            return existing_idx;
+        if let Some(idx) = self.node_index_by_name.get(&node.name).copied() {
+            self.core[idx].node_index = idx;
+            return idx;
         }
         let idx = self.core.add_node(node.clone());
         self.core[idx].node_index = idx;
@@ -225,6 +256,7 @@ where
             uuid: node.metadata.id,
             index: idx,
         });
+        self.node_index_by_name.insert(node.name.clone(), idx);
         idx
     }
 
@@ -238,14 +270,15 @@ where
     }
 
     pub fn get_node_index_by_name(&self, name: &str) -> Option<NodeIndex> {
-        self.core
-            .node_indices()
-            .find(|&idx| self.core[idx].name == name)
+        self.node_index_by_name.get(name).copied()
     }
 
     pub fn load_from_file(path: &str) -> Result<Self, String> {
         let data = fs::read_to_string(path).map_err(|e| format!("Error to read file: {}", e))?;
-        serde_json::from_str(&data).map_err(|e| format!("Error to deserialize Graph: {}", e))
+        let mut g: Self = serde_json::from_str(&data)
+            .map_err(|e| format!("Error to deserialize Graph: {}", e))?;
+        g.rebuild_indexes();
+        Ok(g)
     }
 
     pub fn save_to_file(&self, path: &str) -> Result<(), String> {
@@ -253,9 +286,78 @@ where
             std::fs::create_dir_all(parent)
                 .map_err(|e| format!("Error to create directories: {}", e))?;
         }
-        let json = serde_json::to_string_pretty(self)
+        let mut clone = self.clone_for_save();
+        let json = serde_json::to_string_pretty(&clone)
             .map_err(|e| format!("Error to serialize Graph: {}", e))?;
         std::fs::write(path, json).map_err(|e| format!("Error to write file: {}", e))
+    }
+
+    pub fn save_to_file_encrypted(&self, path: &str, passphrase: &str) -> Result<(), String> {
+        let mut clone = self.clone_for_save();
+        crate::persist::save_encrypted(&clone, path, passphrase)
+    }
+
+    pub fn load_from_file_encrypted(path: &str, passphrase: &str) -> Result<Self, String> {
+        let mut g: Self = crate::persist::load_encrypted(path, passphrase)?;
+        g.rebuild_indexes();
+        Ok(g)
+    }
+
+    fn rebuild_indexes(&mut self) {
+        self.node_index_by_name.clear();
+        for idx in self.core.node_indices() {
+            let name = self.core[idx].name.clone();
+            self.node_index_by_name.insert(name, idx);
+        }
+    }
+
+    fn clone_for_save(&self) -> Self {
+        let mut cloned = Self {
+            name: self.name.clone(),
+            core: self.core.clone(),
+            edges: self.edges.clone(),
+            runtime_ref: self.runtime_ref.clone(),
+            metadata: self.metadata.clone(),
+            edge_kinds: self.edge_kinds.clone(),
+            node_index_by_name: HashMap::new(),
+        };
+        cloned.runtime_ref.nodes.sort_by_key(|r| r.index.index());
+        cloned.runtime_ref.edges.sort_by_key(|r| r.index.index());
+        cloned
+            .runtime_ref
+            .edge_kinds
+            .sort_by(|a, b| a.name.cmp(&b.name));
+        cloned.edge_kinds.sort_by(|a, b| a.name.cmp(&b.name));
+        cloned
+    }
+
+    pub fn top_k_nodes_by_energy(&self, k: usize) -> Vec<Ref<NodeIndex>> {
+        let mut v: Vec<_> = self.runtime_ref.nodes.iter().cloned().collect();
+        v.sort_by(|a, b| self.core[b.index].energy.cmp(&self.core[a.index].energy));
+        v.into_iter().take(k).collect()
+    }
+
+    pub fn neighbors_by_edge_kind(
+        &self,
+        node_idx: NodeIndex,
+        edge_kind_name: &str,
+    ) -> Vec<Ref<NodeIndex>> {
+        self.core[node_idx]
+            .connections
+            .iter()
+            .filter(|c| c.edge.name == edge_kind_name)
+            .map(|c| c.node.clone())
+            .collect()
+    }
+
+    pub fn edge_kind_stats(&self) -> Vec<(String, u32)> {
+        let mut v: Vec<_> = self
+            .edge_kinds
+            .iter()
+            .map(|k| (k.name.clone(), k.energy))
+            .collect();
+        v.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+        v
     }
 }
 
@@ -272,6 +374,12 @@ pub struct Ref<I> {
     pub uuid: Uuid,
     pub name: String,
     pub index: I,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EdgeKindRef {
+    pub uuid: Uuid,
+    pub name: String,
 }
 
 // -----------NODE---------------------------------
