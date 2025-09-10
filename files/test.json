@@ -5,25 +5,171 @@
       {
         "name": "person1",
         "content": "filipe",
-        "connections": [],
+        "energy": 1,
+        "connections": [
+          {
+            "node": {
+              "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+              "index": 1
+            },
+            "edge": {
+              "name": "friendship",
+              "from": 0,
+              "to": 1,
+              "weight": 1,
+              "edge_index": 0,
+              "metadata": {
+                "id": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+                "description": "description of friendship",
+                "created_at": "2025-09-10T03:23:56.842589558Z",
+                "updated_at": "2025-09-10T03:23:56.842589558Z"
+              }
+            }
+          }
+        ],
         "node_index": 0,
         "metadata": {
-          "created_at": "2025-09-09T18:40:38.250498674Z",
+          "id": "fcb0ac65-7fcd-4880-bbb9-75127e5092f8",
           "description": "description of node1",
-          "updated_at": "2025-09-09T18:40:38.250498674Z",
-          "id": "6bb4dd1f-0892-4705-939f-e9f8ec2bef28"
+          "created_at": "2025-09-10T03:23:56.842579895Z",
+          "updated_at": "2025-09-10T03:23:56.842579895Z"
         }
       },
       {
         "name": "person2",
         "content": "maria",
-        "connections": [],
-        "node_index": 0,
+        "energy": 3,
+        "connections": [
+          {
+            "node": {
+              "uuid": "fcb0ac65-7fcd-4880-bbb9-75127e5092f8",
+              "index": 0
+            },
+            "edge": {
+              "name": "friendship",
+              "from": 0,
+              "to": 1,
+              "weight": 1,
+              "edge_index": 0,
+              "metadata": {
+                "id": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+                "description": "description of friendship",
+                "created_at": "2025-09-10T03:23:56.842589558Z",
+                "updated_at": "2025-09-10T03:23:56.842589558Z"
+              }
+            }
+          },
+          {
+            "node": {
+              "uuid": "512e2249-36a5-44c6-a2a2-686bd4d8a580",
+              "index": 2
+            },
+            "edge": {
+              "name": "friendship",
+              "from": 1,
+              "to": 2,
+              "weight": 1,
+              "edge_index": 1,
+              "metadata": {
+                "id": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+                "description": "description of friendship",
+                "created_at": "2025-09-10T03:23:56.842592641Z",
+                "updated_at": "2025-09-10T03:23:56.842592641Z"
+              }
+            }
+          },
+          {
+            "node": {
+              "uuid": "34dd5355-13a9-4d30-994d-2b1d1aa1a7d1",
+              "index": 3
+            },
+            "edge": {
+              "name": "friendship",
+              "from": 1,
+              "to": 3,
+              "weight": 1,
+              "edge_index": 2,
+              "metadata": {
+                "id": "bb548404-8f99-41d0-84a4-6204f6728184",
+                "description": "description of friendship",
+                "created_at": "2025-09-10T03:23:56.842595322Z",
+                "updated_at": "2025-09-10T03:23:56.842595322Z"
+              }
+            }
+          }
+        ],
+        "node_index": 1,
         "metadata": {
-          "created_at": "2025-09-09T18:40:38.250499124Z",
+          "id": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
           "description": "description of node2",
-          "updated_at": "2025-09-09T18:40:38.250499124Z",
-          "id": "47353439-5272-415e-a1c5-522fd03c903e"
+          "created_at": "2025-09-10T03:23:56.842580394Z",
+          "updated_at": "2025-09-10T03:23:56.842580394Z"
+        }
+      },
+      {
+        "name": "person3",
+        "content": "joao",
+        "energy": 1,
+        "connections": [
+          {
+            "node": {
+              "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+              "index": 1
+            },
+            "edge": {
+              "name": "friendship",
+              "from": 1,
+              "to": 2,
+              "weight": 1,
+              "edge_index": 1,
+              "metadata": {
+                "id": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+                "description": "description of friendship",
+                "created_at": "2025-09-10T03:23:56.842592641Z",
+                "updated_at": "2025-09-10T03:23:56.842592641Z"
+              }
+            }
+          }
+        ],
+        "node_index": 2,
+        "metadata": {
+          "id": "512e2249-36a5-44c6-a2a2-686bd4d8a580",
+          "description": "description of node3",
+          "created_at": "2025-09-10T03:23:56.842591372Z",
+          "updated_at": "2025-09-10T03:23:56.842591372Z"
+        }
+      },
+      {
+        "name": "person4",
+        "content": "henrique",
+        "energy": 1,
+        "connections": [
+          {
+            "node": {
+              "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
+              "index": 1
+            },
+            "edge": {
+              "name": "friendship",
+              "from": 1,
+              "to": 3,
+              "weight": 1,
+              "edge_index": 2,
+              "metadata": {
+                "id": "bb548404-8f99-41d0-84a4-6204f6728184",
+                "description": "description of friendship",
+                "created_at": "2025-09-10T03:23:56.842595322Z",
+                "updated_at": "2025-09-10T03:23:56.842595322Z"
+              }
+            }
+          }
+        ],
+        "node_index": 3,
+        "metadata": {
+          "id": "34dd5355-13a9-4d30-994d-2b1d1aa1a7d1",
+          "description": "description of node4",
+          "created_at": "2025-09-10T03:23:56.842594193Z",
+          "updated_at": "2025-09-10T03:23:56.842594193Z"
         }
       }
     ],
@@ -34,46 +180,71 @@
         0,
         1,
         1
+      ],
+      [
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        3,
+        1
       ]
     ]
   },
   "edges": [
     {
-      "name": "friendship",
-      "from": 0,
-      "to": 1,
-      "weight": 1,
-      "edge_index": 0,
-      "metadata": {
-        "created_at": "2025-09-09T18:40:38.250504604Z",
-        "description": "description of friendship",
-        "updated_at": "2025-09-09T18:40:38.250504604Z",
-        "id": "cb7fa6c6-5d35-498b-920c-5f2e48f79d45"
-      }
+      "uuid": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
+      "index": 0
+    },
+    {
+      "uuid": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+      "index": 1
+    },
+    {
+      "uuid": "bb548404-8f99-41d0-84a4-6204f6728184",
+      "index": 2
     }
   ],
   "runtime_ref": {
     "edges": [
       {
-        "uuid": "cb7fa6c6-5d35-498b-920c-5f2e48f79d45",
+        "uuid": "c3760753-20ff-4c6b-9a12-b6b5eb1f243c",
         "index": 0
+      },
+      {
+        "uuid": "9217cb06-cb68-433c-bfac-f1f870ba9902",
+        "index": 1
+      },
+      {
+        "uuid": "bb548404-8f99-41d0-84a4-6204f6728184",
+        "index": 2
       }
     ],
     "nodes": [
       {
-        "uuid": "6bb4dd1f-0892-4705-939f-e9f8ec2bef28",
+        "uuid": "fcb0ac65-7fcd-4880-bbb9-75127e5092f8",
         "index": 0
       },
       {
-        "uuid": "47353439-5272-415e-a1c5-522fd03c903e",
+        "uuid": "71e6a964-8043-4da4-ae30-48ed6a9e3b61",
         "index": 1
+      },
+      {
+        "uuid": "512e2249-36a5-44c6-a2a2-686bd4d8a580",
+        "index": 2
+      },
+      {
+        "uuid": "34dd5355-13a9-4d30-994d-2b1d1aa1a7d1",
+        "index": 3
       }
     ]
   },
   "metadata": {
-    "created_at": "2025-09-09T18:40:38.250485037Z",
+    "id": "f4e8a862-74d3-4c29-88f1-0f95af38679e",
     "description": "test graph.",
-    "updated_at": "2025-09-09T18:40:38.250485037Z",
-    "id": "30d1b00a-3e85-4b3c-8c68-46b3d501b17f"
+    "created_at": "2025-09-10T03:23:56.842566230Z",
+    "updated_at": "2025-09-10T03:23:56.842566230Z"
   }
 }

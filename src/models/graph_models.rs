@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use petgraph::prelude::EdgeIndex;
 use petgraph::{EdgeType, Graph, graph::NodeIndex};
 use serde::{Deserialize, Serialize};
+use std::fs;
 use uuid::Uuid;
 
 // -----------RUNTIME-REF---------------------------------
@@ -15,7 +16,7 @@ pub struct RuntimeRef {
 pub struct Grapho<T, Ty: EdgeType> {
     pub name: String,
     pub core: Graph<Node<T>, u32, Ty>,
-    pub edges: Vec<Edge>,
+    pub edges: Vec<Ref<EdgeIndex>>,
     pub runtime_ref: RuntimeRef,
     pub metadata: Metadata,
 }
@@ -50,11 +51,75 @@ where
         let from_idx = self.get_or_add_node(from);
         let to_idx = self.get_or_add_node(to);
 
+        // Se já existir uma aresta com o mesmo nome entre este par de nós (qualquer direção), não cria novamente
+        let existing_edge_props: Option<EdgeProps> = self.core[from_idx]
+            .connections
+            .iter()
+            .find(|c| {
+                c.edge.name == name
+                    && ((c.edge.from == from_idx && c.edge.to == to_idx)
+                        || (c.edge.from == to_idx && c.edge.to == from_idx))
+            })
+            .map(|c| c.edge.clone())
+            .or_else(|| {
+                self.core[to_idx]
+                    .connections
+                    .iter()
+                    .find(|c| {
+                        c.edge.name == name
+                            && ((c.edge.from == from_idx && c.edge.to == to_idx)
+                                || (c.edge.from == to_idx && c.edge.to == from_idx))
+                    })
+                    .map(|c| c.edge.clone())
+            });
+        let already_exists = existing_edge_props.is_some();
+
+        if already_exists {
+            // Mesmo se já existir a aresta, garantimos que as conexões e energias estão consistentes
+            let from_uuid = self.core[from_idx].metadata.id;
+            let to_uuid = self.core[to_idx].metadata.id;
+            let edge_props: EdgeProps = existing_edge_props.unwrap();
+
+            if !self.core[from_idx]
+                .connections
+                .iter()
+                .any(|r| r.node.index == to_idx)
+            {
+                self.core[from_idx].connections.push(Connection {
+                    node: Ref {
+                        uuid: to_uuid,
+                        index: to_idx,
+                    },
+                    edge: edge_props.clone(),
+                });
+            }
+            if !self.core[to_idx]
+                .connections
+                .iter()
+                .any(|r| r.node.index == from_idx)
+            {
+                self.core[to_idx].connections.push(Connection {
+                    node: Ref {
+                        uuid: from_uuid,
+                        index: from_idx,
+                    },
+                    edge: edge_props.clone(),
+                });
+            }
+
+            self.core[from_idx].node_index = from_idx;
+            self.core[to_idx].node_index = to_idx;
+            self.core[from_idx].energy = self.core[from_idx].connections.len() as u32;
+            self.core[to_idx].energy = self.core[to_idx].connections.len() as u32;
+
+            return Ok(());
+        }
+
         // Cria relação no grafo e obtém índice da aresta
         let edge_index = self.core.add_edge(from_idx, to_idx, 1);
 
         // Cria aresta rica
-        let edge = Edge::new(name, from_idx, to_idx, 1, edge_index, description);
+        let edge = EdgeProps::new(name, from_idx, to_idx, 1, edge_index, description);
 
         // Adiciona no vetor de arestas e nas referências
         if !self
@@ -69,26 +134,95 @@ where
             });
         }
 
-        self.edges.push(edge);
+        self.edges.push(Ref::<EdgeIndex> {
+            uuid: edge.metadata.id,
+            index: edge_index,
+        });
+
+        // Atualiza conexões dos nós e energia (tamanho das conexões)
+        let from_uuid = self.core[from_idx].metadata.id;
+        let to_uuid = self.core[to_idx].metadata.id;
+
+        // Evita duplicação de conexões
+        if !self.core[from_idx]
+            .connections
+            .iter()
+            .any(|r| r.node.index == to_idx)
+        {
+            self.core[from_idx].connections.push(Connection {
+                node: Ref {
+                    uuid: to_uuid,
+                    index: to_idx,
+                },
+                edge: edge.clone(),
+            });
+        }
+        if !self.core[to_idx]
+            .connections
+            .iter()
+            .any(|r| r.node.index == from_idx)
+        {
+            self.core[to_idx].connections.push(Connection {
+                node: Ref {
+                    uuid: from_uuid,
+                    index: from_idx,
+                },
+                edge: edge,
+            });
+        }
+
+        // Mantém o node_index sincronizado e recalcula energia
+        self.core[from_idx].node_index = from_idx;
+        self.core[to_idx].node_index = to_idx;
+        self.core[from_idx].energy = self.core[from_idx].connections.len() as u32;
+        self.core[to_idx].energy = self.core[to_idx].connections.len() as u32;
+
         Ok(())
     }
 
     fn get_or_add_node(&mut self, node: Node<T>) -> NodeIndex {
-        if let Some(existing_ref) = self
-            .runtime_ref
-            .nodes
-            .iter()
-            .find(|r| r.uuid == node.metadata.id)
+        // Tenta encontrar um nó existente pelo "name" do nó
+        if let Some(existing_idx) = self
+            .core
+            .node_indices()
+            .find(|&idx| self.core[idx].name == node.name)
         {
-            existing_ref.index
-        } else {
-            let idx = self.core.add_node(node.clone());
-            self.runtime_ref.nodes.push(Ref {
-                uuid: node.metadata.id,
-                index: idx,
-            });
-            idx
+            // garante que o campo node_index está consistente
+            self.core[existing_idx].node_index = existing_idx;
+            return existing_idx;
         }
+
+        // Caso não exista, cria o nó no grafo e registra a referência de runtime
+        let idx = self.core.add_node(node.clone());
+        // sincroniza o node_index no próprio nó recém adicionado
+        self.core[idx].node_index = idx;
+        // energia inicialmente baseada nas conexões atuais do nó
+        self.core[idx].energy = self.core[idx].connections.len() as u32;
+        self.runtime_ref.nodes.push(Ref {
+            uuid: node.metadata.id,
+            index: idx,
+        });
+        idx
+    }
+
+    pub fn calculate_distance(&self, from: NodeIndex, to: NodeIndex) -> Result<u32, String> {
+        let distance = petgraph::algo::dijkstra(&self.core, from, Some(to), |e| *e.weight());
+        distance
+            .get(&to)
+            .cloned()
+            .ok_or("No path found")
+            .map_err(|e| format!("Error to calculate distance: {}", e))
+    }
+
+    pub fn get_node_index_by_name(&self, name: &str) -> Option<NodeIndex> {
+        self.core
+            .node_indices()
+            .find(|&idx| self.core[idx].name == name)
+    }
+
+    pub fn load_from_file(path: &str) -> Result<Self, String> {
+        let data = fs::read_to_string(path).map_err(|e| format!("Error to read file: {}", e))?;
+        serde_json::from_str(&data).map_err(|e| format!("Error to deserialize Graph: {}", e))
     }
 
     pub fn save_to_file(&self, path: &str) -> Result<(), String> {
@@ -102,8 +236,14 @@ where
     }
 }
 
+// -----------CONNECTIONS--------------------------
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Connection {
+    pub node: Ref<NodeIndex>,
+    pub edge: EdgeProps,
+}
 // -----------REFS---------------------------------
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Ref<I> {
     pub uuid: Uuid,
     pub index: I,
@@ -114,21 +254,18 @@ pub struct Ref<I> {
 pub struct Node<T> {
     pub name: String,
     pub content: T,
-    pub connections: Vec<Ref<NodeIndex>>,
+    pub energy: u32,
+    pub connections: Vec<Connection>,
     pub node_index: NodeIndex,
     pub metadata: Metadata,
 }
 
 impl<T> Node<T> {
-    pub fn new(
-        name: &str,
-        content: T,
-        connections: Vec<Ref<NodeIndex>>,
-        description: &str,
-    ) -> Self {
+    pub fn new(name: &str, content: T, connections: Vec<Connection>, description: &str) -> Self {
         Self {
             name: String::from(name),
             content,
+            energy: connections.len() as u32,
             connections,
             node_index: NodeIndex::new(0),
             metadata: Metadata::new(description.to_string()),
@@ -138,17 +275,17 @@ impl<T> Node<T> {
 
 // -----------EDGE---------------------------------
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Edge {
-    pub name: String,
-    pub from: NodeIndex,
-    pub to: NodeIndex,
-    pub weight: u32,
-    pub edge_index: EdgeIndex,
-    pub metadata: Metadata,
+pub struct EdgeProps {
+    name: String,
+    from: NodeIndex,
+    to: NodeIndex,
+    weight: u32,
+    edge_index: EdgeIndex,
+    metadata: Metadata,
 }
 
-impl Edge {
-    pub fn new(
+impl EdgeProps {
+    fn new(
         name: &str,
         from: NodeIndex,
         to: NodeIndex,
@@ -170,10 +307,10 @@ impl Edge {
 // -----------METADATA---------------------------------
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Metadata {
-    pub created_at: DateTime<Utc>,
-    pub description: String,
-    pub updated_at: DateTime<Utc>,
     pub id: Uuid,
+    pub description: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl Metadata {
