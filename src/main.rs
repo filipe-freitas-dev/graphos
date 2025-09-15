@@ -14,13 +14,11 @@ fn main() {
         Node::new(
             "person1",
             NodeType::Text("filipe".to_string()),
-            vec![],
             "description of node1",
         ),
         Node::new(
             "person2",
             NodeType::Text("maria".to_string()),
-            vec![],
             "description of node2",
         ),
         "friendship",
@@ -30,13 +28,11 @@ fn main() {
         Node::new(
             "person2",
             NodeType::Text("maria".to_string()),
-            vec![],
             "description of node2",
         ),
         Node::new(
             "person3",
             NodeType::Text("joao".to_string()),
-            vec![],
             "description of node3",
         ),
         "friendship",
@@ -46,13 +42,11 @@ fn main() {
         Node::new(
             "person2",
             NodeType::Text("maria".to_string()),
-            vec![],
             "description of node2",
         ),
         Node::new(
             "person4",
             NodeType::Text("henrique".to_string()),
-            vec![],
             "description of node4",
         ),
         "friendship",

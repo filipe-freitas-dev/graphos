@@ -394,12 +394,12 @@ pub struct Node<T> {
 }
 
 impl<T> Node<T> {
-    pub fn new(name: &str, content: T, connections: Vec<Connection>, description: &str) -> Self {
+    pub fn new(name: &str, content: T, description: &str) -> Self {
         Self {
             name: String::from(name),
             content,
-            energy: connections.len() as u32,
-            connections,
+            energy: 0,
+            connections: Vec::new(),
             node_index: NodeIndex::new(0),
             metadata: Metadata::new(description.to_string()),
         }
