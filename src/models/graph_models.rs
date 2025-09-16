@@ -10,10 +10,9 @@ use uuid::Uuid;
 // -----------RUNTIME-REF---------------------------------
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RuntimeRef {
-    // Instances in petgraph core
-    pub edges: Vec<Ref<EdgeIndex>>, // edge instance catalog (by core index)
-    pub nodes: Vec<Ref<NodeIndex>>, // node catalog (by core index)
-    // Reusable edge kinds catalog
+
+    pub edges: Vec<Ref<EdgeIndex>>, 
+    pub nodes: Vec<Ref<NodeIndex>>,
     pub edge_kinds: Vec<EdgeKindRef>, // reference to edge kind id by name
 }
 // -----------RUNTIME---------------------------------
