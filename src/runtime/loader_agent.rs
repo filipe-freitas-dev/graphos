@@ -5,9 +5,9 @@ use std::{collections::HashMap, path::PathBuf, time::{Duration, SystemTime}};
 use crate::models::{graph_models::{Grapho, Metadata}, node_types::NodeTypes};
 
 pub trait LoadGraphOperations<T: NodeTypes, Ty: EdgeType> {
-    pub fn load_graph(&mut self, name: &str) -> Result<Grapho<T,Ty>, String>;
-    pub fn peek_metadata(&mut self, name: &str ) -> Result<GraphMetadata, String>;
-    pub fn is_available(&self, name: &str) -> bool;
+    fn load_graph(&mut self, name: &str) -> Result<Grapho<T,Ty>, String>;
+    fn peek_metadata(&mut self, name: &str ) -> Result<GraphMetadata, String>;
+    fn is_available(&self, name: &str) -> bool;
 }
 
 #[derive(Debug, Clone)]
@@ -32,7 +32,7 @@ pub struct GraphMetadata {
 
 #[derive(Debug, Clone)]
 pub struct LoaderConfig {
-    pub cache_ttl: Duration
+    pub cache_ttl: Duration,
     pub max_memory_usage: usize,
     pub prefetch_popular: bool,
     pub auto_cleanup: bool,
