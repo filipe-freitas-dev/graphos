@@ -7,6 +7,7 @@ use crate::models::graph_models::Grapho;
 use crate::models::node_types::NodeTypes;
 
 pub mod persist;
+pub mod loader_agent;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GraphRuntime<T: NodeTypes, Ty: EdgeType> {
