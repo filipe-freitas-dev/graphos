@@ -10,12 +10,12 @@ pub mod persist;
 pub mod loader_agent;
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct GraphRuntime<T: NodeTypes, Ty: EdgeType> {
+pub struct GraphSpace<T: NodeTypes, Ty: EdgeType> {
     graphs: HashMap<String, Grapho<T, Ty>>,
     global_edge_kinds: HashMap<String, Uuid>,
 }
 
-impl<T: NodeTypes + Clone + Serialize + for<'de> Deserialize<'de>, Ty: EdgeType + Serialize + for<'de> Deserialize<'de>> GraphRuntime<T, Ty> {
+impl<T: NodeTypes + Clone + Serialize + for<'de> Deserialize<'de>, Ty: EdgeType + Serialize + for<'de> Deserialize<'de>> GraphSpace<T, Ty> {
     pub fn new() -> Self {
         Self { graphs: HashMap::new(), global_edge_kinds: HashMap::new() }
     }

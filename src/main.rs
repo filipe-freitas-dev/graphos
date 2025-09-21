@@ -63,7 +63,7 @@ fn main() {
     let _new_graph_enc =
         Grapho::<NodeType, Undirected>::load_from_file_encrypted(&enc_path, pass).unwrap();
 
-    let mut global = runtime::GraphRuntime::<NodeType, Undirected>::new();
+    let mut global = runtime::GraphSpace::<NodeType, Undirected>::new();
     global.add_graph(new_graph);
 }
 
